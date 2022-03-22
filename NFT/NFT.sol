@@ -5,10 +5,12 @@ import "./ERC721.sol";
 contract NFT is ERC721 {
     constructor(string memory name, string memory symbol) ERC721(name, symbol) public {}
 
-    function mintNFT(address to, uint256 tokenId, string memory tokenURI) public
+    function mintNFT(address to, uint256 tokenId, string memory tokenURI, string memory  payload) public
     {
         _mint(to, tokenId);
         _setTokenURI(tokenId, tokenURI);
+        _setTokenPayload(tokenId, payload);
+
     }
 
     function burnNFT(uint256 tokenId) public

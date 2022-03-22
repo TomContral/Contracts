@@ -50,6 +50,11 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
     // Optional mapping for token URIs
     mapping (uint256 => string) private _tokenURIs;
 
+    /**
+ * @dev Mapping from NFT ID to encrypted value.
+ */
+    mapping (uint256 => string) internal _idToPayload;
+
     // Base URI
     string private _baseURI;
 
@@ -365,7 +370,9 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             delete _tokenURIs[tokenId];
         }
-
+        if (bytes(_idToPayload[tokenId]).length != 0) {
+            delete _idToPayload[tokenId];
+        }
         _holderTokens[owner].remove(tokenId);
 
         _tokenOwners.remove(tokenId);
@@ -402,17 +409,22 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
     }
 
     /**
-     * @dev Sets `_tokenURI` as the tokenURI of `tokenId`.
-     *
-     * Requirements:
-     *
-     * - `tokenId` must exist.
+     * @dev Set a distinct URI (RFC 3986) for a given NFT ID.
+     * @notice This is an internal function which should be called from user-implemented external
+     * function. Its purpose is to show and properly initialize data structures when using this
+     * implementation.
+     * @param _tokenId Id for which we want URI.
+     * @param _uri String representing RFC 3986 URI.
      */
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
         require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
         _tokenURIs[tokenId] = _tokenURI;
     }
 
+    function _setTokenPayload(uint256 tokenId, string memory _payload) internal virtual {
+        require(_exists(tokenId), "ERC721Metadata: TokenPayload set of nonexistent token");
+        _idToPayload[tokenId] = _payload;
+    }
     /**
      * @dev Internal function to set the base URI for all token IDs. It is
      * automatically added as a prefix to the value returned in {tokenURI},
@@ -475,4 +487,15 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable 
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual { }
+
+    /**
+   * @dev A distinct URI (RFC 3986) for a given NFT.
+   * @param _tokenId Id for which we want uri.
+   * @return URI of _tokenId.
+   */
+    function tokenPayload(uint256 _tokenId) external view
+    returns (string memory){
+     require(_exists(_tokenId), "ERC721Metadata: tokenPayload get of nonexistent token");
+    return _idToPayload[_tokenId];
+    }
 }
